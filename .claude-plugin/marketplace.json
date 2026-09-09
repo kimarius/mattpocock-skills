@@ -1,10 +1,10 @@
 {
-  "name": "mattpocock-marius",
+  "name": "mattpocock-kimarius",
   "owner": {
     "name": "Matt Pocock",
     "url": "https://www.aihero.dev"
   },
-  "description": "Fork of Matt Pocock's skills marketplace with local fixes (GitLab wayfinder hierarchy).",
+  "description": "Fork of Matt Pocock's skills marketplace, based on upstream v1.2.3, with local fixes (GitLab wayfinder hierarchy).",
   "plugins": [
     {
       "name": "mattpocock-skills",
