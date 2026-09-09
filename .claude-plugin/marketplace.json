@@ -1,10 +1,10 @@
 {
-  "name": "mattpocock",
+  "name": "mattpocock-marius",
   "owner": {
     "name": "Matt Pocock",
     "url": "https://www.aihero.dev"
   },
-  "description": "Matt Pocock's skills for real engineering, as an installable Claude Code plugin.",
+  "description": "Fork of Matt Pocock's skills marketplace with local fixes (GitLab wayfinder hierarchy).",
   "plugins": [
     {
       "name": "mattpocock-skills",
