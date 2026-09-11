@@ -1,6 +1,6 @@
 ## What it does
 
-`implement` builds work that has already been decided. You point it at a [ticket](https://www.aihero.dev/ai-coding-dictionary/ticket), a [spec](https://www.aihero.dev/ai-coding-dictionary/spec), or the plan you just agreed in the conversation, and it writes the code, drives [tdd](https://aihero.dev/skills-tdd) at the seams, typechecks as it goes, runs [code-review](https://aihero.dev/skills-code-review) at the end, and commits to the current branch.
+`implement` builds work that has already been decided. You point it at a [ticket](https://www.aihero.dev/ai-coding-dictionary/ticket), a [spec](https://www.aihero.dev/ai-coding-dictionary/spec), or the plan you just agreed in the conversation, and it writes the code, drives [tdd](https://aihero.dev/skills-tdd) at the seams, typechecks as it goes, runs [code-review](https://aihero.dev/skills-code-review) at the end, and commits. The build happens in a git worktree on a branch of its own, made at the start of the run, so your checkout is never the thing being edited.
 
 It never reopens the plan. There is no interview, no clarifying round, no proposal of a different approach. Whatever was settled upstream is the input, and the skill's whole job is to turn that into a commit. That is what separates it from typing "build this" at a fresh [agent](https://www.aihero.dev/ai-coding-dictionary/agent), which will happily redesign the work while it builds it.
 
@@ -24,19 +24,24 @@ The same-session case is worth naming because the skill's own first line doesn't
 
 ## Prerequisites
 
-`implement` commits to the branch you are on. It does not create one, and it does not ask. Check you are on the branch you want the work on before you start.
+`implement` branches off whatever `HEAD` you invoke it from, so be on the commit you want the work to sit on top of. It creates the branch and the worktree itself, and does not ask first.
+
+The worktree is a fresh checkout of tracked files, which means the project has to be buildable from a clean clone plus an install. Anything untracked that the build or the tests need, a `.env`, a local config file, a generated fixture, has to be copied across, and the skill is told to do that. A build step that silently depends on a file nobody tracks is the usual reason a run stalls on step one.
 
 If the tickets came from [to-tickets](https://aihero.dev/skills-to-tickets), the tracker they live on was configured by [setup-matt-pocock-skills](https://aihero.dev/skills-setup-matt-pocock-skills). `code-review` reads the same configuration to find the originating spec at close-out.
 
 ## What one run does
 
-A run is five beats, in order:
+A run is six beats, in order:
 
-1. Read the ticket or spec and work out the seams.
-2. Drive [tdd](https://aihero.dev/skills-tdd) at the pre-agreed seams, one red-green slice at a time.
-3. Typecheck often, run single test files as it goes.
-4. Run the full test suite once, at the end.
-5. Run [code-review](https://aihero.dev/skills-code-review), then commit to the current branch.
+1. Create the worktree and the `implement/<slug>` branch off your current `HEAD`, then get the project installed and building inside it.
+2. Read the ticket or spec and work out the seams.
+3. Drive [tdd](https://aihero.dev/skills-tdd) at the pre-agreed seams, one red-green slice at a time.
+4. Typecheck often, run single test files as it goes.
+5. Run the full test suite once, at the end.
+6. Run [code-review](https://aihero.dev/skills-code-review), commit to the run's branch, then report the branch, the worktree path, and the `git worktree remove` line.
+
+The worktree stays on disk when the run ends. Merging it, opening a PR from it, and deleting it are yours to do, which is what makes a run you dislike cheap to discard: remove the worktree, delete the branch, and your checkout never knew about it.
 
 One run covers one ticket. The tickets [to-tickets](https://aihero.dev/skills-to-tickets) produces are tracer-bullet vertical slices sized to fit a single fresh [context window](https://www.aihero.dev/ai-coding-dictionary/context-window), so the intended rhythm is: clear context, implement one ticket, commit, clear again. Each ticket is self-contained, which is what makes the previous ticket's context disposable.
 
@@ -54,11 +59,11 @@ Correct, and expected. `implement` has no completion step. It ends at the commit
 
 **Can I point it at all my tickets at once, or run several in parallel?**
 
-No. One invocation, one ticket. Batch dispatch across a ticket queue and [subagent](https://www.aihero.dev/ai-coding-dictionary/subagent) fan-out are both requested repeatedly, and neither exists. Running several `/implement` sessions side by side in one checkout is worse than unsupported: one field report describes a `git commit --amend` in one session landing on another session's commit, a stash vanishing from `refs/stash`, and commits landing on the wrong branch, all in a single afternoon across three issues. The sessions share one working directory, one index, and one HEAD. Git worktrees are the community workaround, and note that `refs/stash` is shared across worktrees too, so worktrees alone do not fix the stash case. If you want parallelism today, you are assembling it yourself.
+One invocation still means one ticket: batch dispatch across a ticket queue and [subagent](https://www.aihero.dev/ai-coding-dictionary/subagent) fan-out are both requested repeatedly, and neither exists. Running several sessions side by side is now survivable, though, because each run takes its own worktree and branch instead of sharing one working directory, one index, and one `HEAD`. That sharing is what produced the worst field report on this skill: a `git commit --amend` in one session landing on another session's commit, a stash vanishing from `refs/stash`, and commits landing on the wrong branch, all in one afternoon across three issues. One thing worktrees do not separate is `refs/stash`, which stays repo-wide, so keep stashing out of concurrent runs. Launching the runs and merging the branches afterwards is still yours to assemble.
 
 **Can it open a pull request instead of committing?**
 
-Not built in. It commits straight to the current branch, which several people find too eager: the code lands before they have had a chance to verify it works. There is no configuration flag and no PR mode. People override it in the invocation ("commit to a branch and open a PR") or by editing their local copy of the skill.
+Not built in, but the branch is already there. The run commits to `implement/<slug>` in its worktree and stops, so opening the PR is one `gh pr create` away and nothing has touched your branch in the meantime. The complaint this answers, that the code lands before anyone has verified it works, used to bite because the commit went straight onto the branch you were sitting on. Now it lands somewhere you can read it first. There is still no PR mode and no configuration flag; ask for the PR in the invocation if you want the run to open one.
 
 **`code-review` says it cannot see my changes.**
 
@@ -76,10 +81,12 @@ Probably the ticket is too big rather than the skill being misused. A run does c
 
 ## It's working if
 
-- The session opens by reading the ticket or spec and restating what it will build, rather than asking you what to build.
+- A `git worktree add` runs before any file is edited, and every command after it runs in that new directory.
+- The session reads the ticket or spec and restates what it will build, rather than asking you what to build.
 - You can see an actual `/tdd` invocation in the trace, not just tests appearing in the diff.
 - Typechecks and single test files run repeatedly during the run, and the full suite runs once near the end.
-- The run reaches a commit on your current branch without you prompting it to carry on.
+- Your own checkout is untouched at the end: same branch, same `git status` you started with.
+- The run reaches a commit on the run's branch without you prompting it to carry on, and tells you the branch name and worktree path when it stops.
 - The diff is one ticket's worth of change: a vertical slice through every layer, not several tickets swept together.
 
 ## Where it fits
