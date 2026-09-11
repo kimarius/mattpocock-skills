@@ -58,4 +58,4 @@ The plugin is a managed, read-only bundle you subscribe to. skills.sh writes fil
 
 ## Not the install story
 
-`.claude-plugin/marketplace.json` makes the repo its own single-plugin marketplace (`/plugin marketplace add mattpocock/skills`, then `/plugin install mattpocock-skills@mattpocock`). The official listing supersedes it. It is kept as a fallback for installing the repo directly (an unreleased commit, or a fork), and is **not** documented to users.
+`.claude-plugin/marketplace.json` makes the repo its own single-plugin marketplace (`/plugin marketplace add kimarius/mattpocock-skills`, then `/plugin install marius-mattpocock-skills@mattpocock-kimarius`). The official listing supersedes it. It is kept as a fallback for installing the repo directly (an unreleased commit, or a fork), and is **not** documented to users.

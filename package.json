@@ -1,11 +1,11 @@
 {
-  "name": "mattpocock-skills",
+  "name": "marius-mattpocock-skills",
   "version": "1.2.3-kimarius.1",
   "private": true,
-  "description": "Matt Pocock's agent skills for real engineering",
+  "description": "Marius Matt Pocock skills: a fork of Matt Pocock's agent skills for real engineering",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mattpocock/skills"
+    "url": "https://github.com/kimarius/mattpocock-skills"
   },
   "license": "MIT",
   "scripts": {

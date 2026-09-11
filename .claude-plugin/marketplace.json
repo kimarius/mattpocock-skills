@@ -1,15 +1,15 @@
 {
   "name": "mattpocock-kimarius",
   "owner": {
-    "name": "Matt Pocock",
-    "url": "https://www.aihero.dev"
+    "name": "kimarius",
+    "url": "https://github.com/kimarius/mattpocock-skills"
   },
-  "description": "Fork of Matt Pocock's skills marketplace, based on upstream v1.2.3, with local fixes (GitLab wayfinder hierarchy).",
+  "description": "Marius Matt Pocock skills: a fork of Matt Pocock's skills marketplace, based on upstream v1.2.3, with local fixes (GitLab wayfinder hierarchy).",
   "plugins": [
     {
-      "name": "mattpocock-skills",
+      "name": "marius-mattpocock-skills",
       "source": "./",
-      "description": "Matt Pocock's agent skills for real engineering (grilling, spec/ticket flows, TDD, code review, domain modelling and more).",
+      "description": "Marius Matt Pocock skills: Matt Pocock's agent skills for real engineering (grilling, spec/ticket flows, TDD, code review, domain modelling and more), forked.",
       "category": "engineering",
       "keywords": [
         "engineering",
